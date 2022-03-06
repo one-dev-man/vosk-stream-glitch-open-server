@@ -6,15 +6,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
 const path = require("path");
 const http = require("http");
+const https = require("https");
 const AdmZip = require("adm-zip");
 const vosk_stream_1 = __importDefault(require("vosk-stream"));
 const cli_1 = require("./cli/cli");
 //
 let cli = new cli_1.CLI();
-console.log("1");
 cli.setFirstCommand({
     callback: async (label, args, cli) => {
-        console.log("2");
         try {
             if (!args["config-path"]) {
                 console.log("No config path specified");
@@ -45,13 +44,12 @@ cli.setFirstCommand({
             !fs.existsSync(models_archives_path) ? fs.mkdirSync(models_archives_path) : null;
             let models_extracted_path = path.join(models_root_path, "./extracted/");
             !fs.existsSync(models_extracted_path) ? fs.mkdirSync(models_extracted_path) : null;
-            let models_archives_filenames = fs.readdirSync(models_archives_path).filter(fn => { return fn.endsWith(".zip"); });
-            vosk_stream_1.default.setVoskLogLevel(0);
-            for (let i = 0; i < models_archives_filenames.length; ++i) {
-                let model_archive_filename = models_archives_filenames[i];
+            let models_to_download = config.downloads.models;
+            for (let i = 0; i < models_to_download.length; ++i) {
                 try {
-                    let model_archive_path = path.join(models_archives_path, model_archive_filename);
-                    let model_extracted_path = path.join(models_extracted_path, model_archive_filename.substring(0, model_archive_filename.length - path.extname(model_archive_filename).length));
+                    let model_archive_path = await downloadFile(models_to_download[i].url, models_archives_path);
+                    let model_archive_filename = path.basename(model_archive_path);
+                    let model_extracted_path = path.join(models_extracted_path, model_archive_filename.substring(0, model_archive_filename.length - path.extname(model_archive_filename).length), models_to_download[i].path);
                     !fs.existsSync(model_extracted_path) ? fs.mkdirSync(model_extracted_path) : null;
                     //
                     console.info(`Extracting model archive "${model_archive_filename}"...`);
@@ -82,4 +80,29 @@ cli.setFirstCommand({
     }
 });
 cli.first();
+//
+function downloadFile(url, dir, options) {
+    return new Promise((resolve, reject) => {
+        let file_name = path.basename(new URL(url).pathname);
+        let file_path = path.join(dir, file_name);
+        if (!fs.existsSync(file_path)) {
+            let request = https.request(url, {
+                method: "GET"
+            }, (response) => {
+                fs.writeFileSync(file_path, Buffer.from([]));
+                let file_wstream = fs.createWriteStream(file_path);
+                response.on("data", d => {
+                    file_wstream.write(d);
+                });
+                response.on("close", () => {
+                    file_wstream.close();
+                    resolve(file_path);
+                });
+            });
+            request.end();
+        }
+        else
+            resolve(file_path);
+    });
+}
 //# sourceMappingURL=server.js.map
