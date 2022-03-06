@@ -57,7 +57,9 @@ cli.setFirstCommand({
             let models_extracted_path = path.join(models_root_path, "./extracted/");
             !fs.existsSync(models_extracted_path) ? fs.mkdirSync(models_extracted_path) : null;
 
-            let models_archives_filenames = fs.readdirSync(models_archives_path);
+            let models_archives_filenames = fs.readdirSync(models_archives_path).filter(fn => { return fn.endsWith(".zip"); });
+
+            VoskStream.setVoskLogLevel(-1);
             for(let i = 0; i < models_archives_filenames.length; ++i) {
                 let model_archive_filename = models_archives_filenames[i];
                 try {
