@@ -10,6 +10,13 @@ const AdmZip = require("adm-zip");
 const vosk_stream_1 = __importDefault(require("vosk-stream"));
 const cli_1 = require("./cli/cli");
 //
+let logs_dir_path = path.join(__dirname, "../logs/");
+let date = new Date();
+let current_log_file_path = path.join(logs_dir_path, `${date.getDate()}-${date.getMonth() + 1}-${date.getFullYear()}_${Date.now()}`);
+!fs.existsSync(logs_dir_path) ? fs.mkdirSync(logs_dir_path) : null;
+let current_log_write_stream = fs.createWriteStream(current_log_file_path);
+process.stdout.pipe(current_log_write_stream);
+process.stderr.pipe(current_log_write_stream);
 let cli = new cli_1.CLI();
 cli.setFirstCommand({
     callback: async (label, args, cli) => {

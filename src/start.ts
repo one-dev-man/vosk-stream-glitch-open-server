@@ -25,7 +25,6 @@ function start() {
 
     //
 
-    console.log(server_script_path);
     server_process = spawn("node", [server_script_path, "--config-path", "config.json"]);
 
     process.stdin.pipe(server_process.stdin);
