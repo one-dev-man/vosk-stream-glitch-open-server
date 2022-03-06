@@ -95,6 +95,9 @@ cli.setFirstCommand({
                     console.error(e);
                 }
             }
+
+            await transcription_server.open();
+
         }
         catch(e) {
             console.error(e);
