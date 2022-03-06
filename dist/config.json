@@ -7,7 +7,7 @@
         },
         {
             "label": "fr",
-            "archive": "../resources/stt-models/archives/vosk-model-small-fr-0.22",
+            "archive": "../resources/stt-models/archives/vosk-model-small-fr-0.22.zip",
             "path": "../resources/stt-models/extracted/vosk-model-small-fr-0.22"
         }
     ]

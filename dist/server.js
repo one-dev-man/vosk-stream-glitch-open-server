@@ -28,10 +28,10 @@ cli.setFirstCommand({
         let transcription_server = new vosk_stream_1.default.WebSocket.Server({ httpServer: http_server });
         config.models.forEach((model_) => {
             let model_path = path.join(path.dirname(config_path), model_.path);
-            if (!fs.existsSync(model_path)) {
+            let archive_path = path.join(path.dirname(config_path), model_.archive);
+            if (!fs.existsSync(model_path) && fs.existsSync(archive_path)) {
                 fs.mkdirSync(model_path);
-                console.log(path.join(path.dirname(config_path), model_.archive));
-                let zip = new AdmZip(path.join(path.dirname(config_path), model_.archive));
+                let zip = new AdmZip(archive_path);
                 zip.extractAllTo(model_path);
                 process.exit(0);
             }
