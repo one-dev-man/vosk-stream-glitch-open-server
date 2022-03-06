@@ -12,10 +12,8 @@ import { CLI } from "./cli/cli";
 
 let cli = new CLI();
 
-console.log("1");
 cli.setFirstCommand({
     callback: async (label: string, args: any[], cli: CLI) => {
-        console.log("2");
         try {
             if(!args["config-path"]) {
                 console.log("No config path specified");
