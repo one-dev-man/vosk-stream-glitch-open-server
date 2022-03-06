@@ -51,6 +51,6 @@ cli.setFirstCommand({
 
         return true;
     }
-})
+});
 
 cli.first();
