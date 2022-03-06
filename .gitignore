@@ -5,4 +5,4 @@
 
 /resources/stt-models/extracted/
 
-/package-lock.json
+./package-lock.json
