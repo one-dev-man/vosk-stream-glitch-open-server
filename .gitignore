@@ -3,4 +3,5 @@
 /src/test/
 /dist/test/
 
-/resources/stt-models/**/*.*
+/resources/stt-models/*
+!/**/.gitkeep
