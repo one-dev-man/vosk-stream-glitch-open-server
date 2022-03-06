@@ -7,7 +7,7 @@
     "build": "tsc --build .",
     "test": "node dist/test/test",
     "build-test": "npm run build && npm run test",
-    "start": "npm install git+https://github.com/one-dev-man/vosk-stream.git && npm run start"
+    "start": "npm install git+https://github.com/one-dev-man/vosk-stream.git && node dist/start"
   },
   "engines": {
     "node": "16.x"
