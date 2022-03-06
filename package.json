@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc --build .",
+    "build": "node delfiles && tsc --build . && node copyfiles",
     "test": "node dist/test/test",
     "build-test": "npm run build && npm run test",
     "start": "npm install git+https://github.com/one-dev-man/vosk-stream.git && node dist/start"

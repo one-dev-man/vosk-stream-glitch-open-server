@@ -5,3 +5,5 @@
 
 /resources/stt-models/**/*.*
 !/**/.gitkeep
+
+/logs/

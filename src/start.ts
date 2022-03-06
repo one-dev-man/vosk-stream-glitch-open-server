@@ -5,10 +5,6 @@ import { spawn, ChildProcess } from "child_process";
 
 //
 
-require("./copyfiles");
-
-//
-
 let server_script_path = path.join(__dirname, "./server");
 
 //

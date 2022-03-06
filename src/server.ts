@@ -10,14 +10,6 @@ import { CLI } from "./cli/cli";
 
 //
 
-let logs_dir_path = path.join(__dirname, "../logs/");
-let date = new Date();
-let current_log_file_path = path.join(logs_dir_path, `${(date.getDate() < 10 ? "0" : "")+date.getDate()}-${(date.getMonth()+1 < 10 ? "0" : "")+(date.getMonth()+1)}-${date.getFullYear()}_${Date.now()}.log`);
-!fs.existsSync(logs_dir_path) ? fs.mkdirSync(logs_dir_path) : null;
-let current_log_write_stream = fs.createWriteStream(current_log_file_path);
-process.stdout.pipe(current_log_write_stream);
-process.stderr.pipe(current_log_write_stream);
-
 let cli = new CLI();
 
 cli.setFirstCommand({
@@ -67,7 +59,7 @@ cli.setFirstCommand({
 
             let models_archives_filenames = fs.readdirSync(models_archives_path).filter(fn => { return fn.endsWith(".zip"); });
 
-            // VoskStream.setVoskLogLevel(-1);
+            VoskStream.setVoskLogLevel(0);
             for(let i = 0; i < models_archives_filenames.length; ++i) {
                 let model_archive_filename = models_archives_filenames[i];
                 try {

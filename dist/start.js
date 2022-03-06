@@ -3,8 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 const child_process_1 = require("child_process");
 //
-require("./copyfiles");
-//
 let server_script_path = path.join(__dirname, "./server");
 //
 let server_process = null;
