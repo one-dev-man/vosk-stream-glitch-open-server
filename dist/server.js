@@ -11,8 +11,10 @@ const vosk_stream_1 = __importDefault(require("vosk-stream"));
 const cli_1 = require("./cli/cli");
 //
 let cli = new cli_1.CLI();
+console.log("1");
 cli.setFirstCommand({
     callback: async (label, args, cli) => {
+        console.log("2");
         try {
             if (!args["config-path"]) {
                 console.log("No config path specified");
