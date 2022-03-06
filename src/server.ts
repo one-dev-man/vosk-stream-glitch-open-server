@@ -3,6 +3,8 @@ import path = require("path");
 
 import http = require("http");
 
+import AdmZip = require("adm-zip");
+
 import VoskStream from "vosk-stream";
 import { CLI } from "./cli/cli";
 
@@ -32,9 +34,22 @@ cli.setFirstCommand({
         
         let transcription_server = new VoskStream.WebSocket.Server({ httpServer: http_server });
         
-        config.models.forEach((model_: { label: string, path: string }) => {
-            transcription_server.loadModel(model_.label, path.join(path.dirname(config_path), model_.path)); 
+        config.models.forEach((model_: { label: string, archive: string, path: string }) => {
+            let model_path = path.join(path.dirname(config_path), model_.path);
+            if(!fs.existsSync(model_path)) {
+                fs.mkdirSync(model_path);
+                console.log(path.join(path.dirname(config_path), model_.archive));
+                
+                let zip = new AdmZip(path.join(path.dirname(config_path), model_.archive));
+                zip.extractAllTo(model_path);
+
+                process.exit(0);
+            }
+
+            transcription_server.loadModel(model_.label, model_path); 
         });
+
+        return true;
     }
 })
 

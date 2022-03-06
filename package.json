@@ -13,6 +13,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "adm-zip": "^0.5.9",
     "vosk-stream": "github:one-dev-man/vosk-stream"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.4.34"
   }
 }

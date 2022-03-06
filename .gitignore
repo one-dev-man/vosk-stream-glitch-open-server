@@ -4,3 +4,7 @@
 /dist/test/
 
 /resources/stt-models/extracted/
+
+#
+
+package-lock.json
