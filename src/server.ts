@@ -59,7 +59,7 @@ cli.setFirstCommand({
 
             let models_archives_filenames = fs.readdirSync(models_archives_path).filter(fn => { return fn.endsWith(".zip"); });
 
-            VoskStream.setVoskLogLevel(-1);
+            // VoskStream.setVoskLogLevel(-1);
             for(let i = 0; i < models_archives_filenames.length; ++i) {
                 let model_archive_filename = models_archives_filenames[i];
                 try {

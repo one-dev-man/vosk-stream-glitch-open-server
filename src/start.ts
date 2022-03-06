@@ -5,6 +5,10 @@ import { spawn, ChildProcess } from "child_process";
 
 //
 
+require("./copyfiles");
+
+//
+
 let server_script_path = path.join(__dirname, "./server");
 
 //
@@ -21,6 +25,7 @@ function start() {
 
     //
 
+    console.log(server_script_path);
     server_process = spawn("node", [server_script_path, "--config-path", "config.json"]);
 
     process.stdin.pipe(server_process.stdin);
