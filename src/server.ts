@@ -17,11 +17,11 @@ cli.setFirstCommand({
     callback: async (label: string, args: any[], cli: CLI) => {
         try {
             if(!args["config-path"]) {
-                console.log("No config path specified");
+                console.warn("No config path specified");
                 return true;
             }
 
-            let config_path = path.join(path.dirname(args[0]), args["config-path"]);
+            let config_path = path.parse(args[0]).root == path.parse(args["config-path"]).root ? args["config-path"] : path.join(path.dirname(args[0]), args["config-path"]);
             let config = JSON.parse(fs.readFileSync(config_path, "utf-8"));
             
             //
@@ -35,42 +35,26 @@ cli.setFirstCommand({
             //
             
             let transcription_server = new VoskStream.WebSocket.Server({ httpServer: http_server });
-            
-            // config.models.forEach((model_: { label: string, archive: string, path: string }) => {
-            //     let model_path = path.join(path.dirname(config_path), model_.path);
-            //     let archive_path = path.join(path.dirname(config_path), model_.archive);
-            //     if(!fs.existsSync(model_path) && fs.existsSync(archive_path)) {
-            //         fs.mkdirSync(model_path);
-                    
-            //         let zip = new AdmZip(archive_path);
-            //         zip.extractAllTo(model_path);
-
-            //         process.exit(0);
-            //     }
-
-            //     transcription_server.loadModel(model_.label, model_path); 
-            // });
 
             let models_root_path = path.join(path.dirname(config_path), config.models_root);
 
             let models_archives_path = path.join(models_root_path, "./archives/");
-            !fs.existsSync(models_archives_path) ? fs.mkdirSync(models_archives_path) : null;
+            !fs.existsSync(models_archives_path) ? mkdirs(models_archives_path) : null;
             let models_extracted_path = path.join(models_root_path, "./extracted/");
-            !fs.existsSync(models_extracted_path) ? fs.mkdirSync(models_extracted_path) : null;
+            !fs.existsSync(models_extracted_path) ? mkdirs(models_extracted_path) : null;
 
-            let models_to_download = config.downloads.models;
-            for(let i = 0; i < models_to_download.length; ++i) {
+            let models_ = config.models;
+            for(let i = 0; i < models_.length; ++i) {
                 try {
-                    let model_archive_path = await downloadFile(models_to_download[i].url, models_archives_path);
+                    let model_ = models_[i];
+
+                    let model_archive_path = await downloadFile(models_[i].url, models_archives_path, { cwd: path.dirname(config_path) });
                     let model_archive_filename = path.basename(model_archive_path);
 
-                    let model_extracted_path = path.join(
-                                                    models_extracted_path,
-                                                    model_archive_filename.substring(0, model_archive_filename.length-path.extname(model_archive_filename).length),
-                                                    models_to_download[i].path
-                                                );
+                    let model_extracted_path = path.join(models_extracted_path, model_archive_filename.substring(0, model_archive_filename.length-path.extname(model_archive_filename).length));
+                    let model_path = path.join(model_extracted_path, model_.path);
                     
-                    !fs.existsSync(model_extracted_path) ? fs.mkdirSync(model_extracted_path) : null;
+                    !fs.existsSync(model_extracted_path) ? mkdirs(model_extracted_path) : null;
 
                     //
                     console.info(`Extracting model archive "${model_archive_filename}"...`);
@@ -80,17 +64,17 @@ cli.setFirstCommand({
                     zip.extractAllTo(model_extracted_path);
 
                     //
-                    console.info(`Model archive "${path.basename(model_archive_filename)}" extracted to "${path.basename(model_extracted_path)}"`);
+                    console.info(`Model archive "${path.basename(model_archive_filename)}" extracted to "${model_extracted_path}"`);
                     //
 
                     //
-                    console.info(`Loading model "${path.basename(model_extracted_path)}"...`);
+                    console.info(`Loading model "${path.basename(model_path)}" (${model_path})...`);
                     //
 
-                    await transcription_server.loadModel(model_archive_filename, model_extracted_path);
+                    await transcription_server.loadModel(model_.label, model_path);
 
                     //
-                    console.info(`Model "${path.basename(model_extracted_path)}" loaded`);
+                    console.info(`Model "${path.basename(model_path)}" loaded with label "${model_.label}"`);
                     //
                 }
                 catch(e) {
@@ -113,32 +97,69 @@ cli.first();
 
 //
 
-function downloadFile(url: string, dir: string, options?: { log: boolean }): Promise<string> {
+function downloadFile(url: string, dir: string, options?: { cwd?: string }): Promise<string> {
+    options = options || {} as any;
+    (options as any).cwd = (options as any).cwd || process.cwd();
+
+    let _url: URL;
+    try { _url = new URL("file://"+url); }
+    catch(e) { _url = new URL(url);}
+
     return new Promise((resolve, reject) => {
-        let file_name = path.basename(new URL(url).pathname);
+        let file_name = path.basename(_url.pathname);
         let file_path = path.join(dir, file_name);
     
         if(!fs.existsSync(file_path)) {
-            let request = https.request(url, {
-                method: "GET"
-            }, (response: http.IncomingMessage) => {
-                
-                fs.writeFileSync(file_path, Buffer.from([]));
-                let file_wstream = fs.createWriteStream(file_path); 
-    
-                response.on("data", d => {
-                    file_wstream.write(d);
-                });
-    
-                response.on("close", () => {
-                    file_wstream.close();
+            if(_url.protocol == "file:") {
+                let source_path = path.parse((options as any).cwd).root == path.parse(url).root ? url : path.join((options as any).cwd, url);
 
-                    resolve(file_path);
+                copy(source_path, file_path);
+                resolve(file_path);
+            }
+            else {
+                let request = https.request(_url.href, {
+                    method: "GET"
+                }, (response: http.IncomingMessage) => {
+                    
+                    fs.writeFileSync(file_path, Buffer.from([]));
+                    let file_wstream = fs.createWriteStream(file_path); 
+        
+                    response.on("data", d => { file_wstream.write(d); });
+        
+                    response.on("close", () => {
+                        file_wstream.close();
+                        resolve(file_path);
+                    });
                 });
-            });
-    
-            request.end();
+        
+                request.end();
+            }
         }
         else resolve(file_path);
     });
+}
+
+function mkdirs(_path: string) {
+    !fs.existsSync(path.dirname(_path)) ? mkdirs(path.dirname(_path)) : null;
+    fs.mkdirSync(_path);
+}
+
+function copy(src: string, dest: string, options?: { exclude: RegExp }) {
+    options = options || {} as any;
+    (options as any).exclude = (options as any).exclude || null;
+
+    let file_name = path.basename(src);
+    
+    if(!file_name.match((options as any).exclude)) {
+        if(fs.statSync(src).isDirectory()) {
+            !fs.existsSync(dest) ? fs.mkdirSync(dest) : null;
+            fs.readdirSync(src).forEach(fn => {
+                copy(path.join(src, fn), path.join(dest, fn), options);
+            });
+        }
+        else {
+            fs.writeFileSync(dest, Buffer.from([]));
+            fs.createReadStream(src).pipe(fs.createWriteStream(dest));
+        }
+    }
 }

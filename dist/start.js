@@ -12,7 +12,7 @@ function start() {
     console.log("> Starting server");
     console.log("");
     //
-    server_process = child_process_1.spawn("node", [server_script_path, "--config-path", "config.json"]);
+    server_process = child_process_1.spawn("node", [server_script_path, "--config-path", process.env.CONFIG_PATH || "config.json"]);
     process.stdin.pipe(server_process.stdin);
     server_process.stdout.pipe(process.stdout);
     server_process.stderr.pipe(process.stderr);

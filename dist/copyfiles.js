@@ -5,20 +5,17 @@ const path = require("path");
 function copy(src, dest, options) {
     options = options || {};
     options.exclude = options.exclude || null;
-    let files_names = fs.readdirSync(src);
-    for (let i = 0; i < files_names.length; ++i) {
-        let file_name = files_names[i];
-        let src_file_path = path.join(src, file_name);
-        let dest_file_path = path.join(dest, file_name);
-        if (!file_name.match(options.exclude)) {
-            if (fs.statSync(src_file_path).isDirectory()) {
-                !fs.existsSync(dest_file_path) ? fs.mkdirSync(dest_file_path) : null;
-                copy(src_file_path, dest_file_path, options);
-            }
-            else {
-                fs.writeFileSync(dest_file_path, Buffer.from([]));
-                fs.createReadStream(src_file_path).pipe(fs.createWriteStream(dest_file_path));
-            }
+    let file_name = path.basename(src);
+    if (!file_name.match(options.exclude)) {
+        if (fs.statSync(src).isDirectory()) {
+            !fs.existsSync(dest) ? fs.mkdirSync(dest) : null;
+            fs.readdirSync(src).forEach(fn => {
+                copy(path.join(src, fn), path.join(dest, fn), options);
+            });
+        }
+        else {
+            fs.writeFileSync(dest, Buffer.from([]));
+            fs.createReadStream(src).pipe(fs.createWriteStream(dest));
         }
     }
 }
