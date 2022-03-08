@@ -8,6 +8,14 @@ let server_script_path = path.join(__dirname, "./server");
 let server_process = null;
 function start() {
     //
+    if (process.env.ENVIRONMENT == "production") {
+        console.log("");
+        console.log("> Produciton environment detected");
+        console.log("> Cleaning useless data on disk (.git & .cache)");
+        console.log("");
+        child_process_1.execSync("rm -rf .git && rm -rf .cache");
+    }
+    //
     console.log("");
     console.log("> Starting server");
     console.log("");
