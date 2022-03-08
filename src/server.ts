@@ -27,7 +27,7 @@ cli.setFirstCommand({
             //
             
             let http_server = http.createServer((request, response) => {
-                response.end();
+                response.end("");
             });
             
             http_server.listen(process.env.PORT || 5678);

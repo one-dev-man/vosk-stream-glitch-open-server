@@ -23,7 +23,7 @@ cli.setFirstCommand({
             let config = JSON.parse(fs.readFileSync(config_path, "utf-8"));
             //
             let http_server = http.createServer((request, response) => {
-                response.end();
+                response.end("");
             });
             http_server.listen(process.env.PORT || 5678);
             //
