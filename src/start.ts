@@ -1,7 +1,7 @@
 import fs = require("fs");
 import path = require("path");
 
-import { spawn, ChildProcess, execSync } from "child_process";
+import { spawn, ChildProcess } from "child_process";
 
 //
 
@@ -12,17 +12,6 @@ let server_script_path = path.join(__dirname, "./server");
 let server_process: ChildProcess | null = null;
 
 function start() {
-
-    //
-
-    if(process.env.ENVIRONMENT == "production") {
-        console.log("");
-        console.log("> Produciton environment detected");
-        console.log("> Cleaning useless data on disk (.git & .cache)");
-        console.log("");
-
-        execSync("rm -rf .git && rm -rf .cache");
-    }
 
     //
 
